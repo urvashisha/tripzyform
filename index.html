@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tripzy Travel Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: #121212; color: white; }
+        .header { text-align: center; padding: 18px; background: #1a1a1a; border-bottom: 2px solid #FFC107; }
+        .header h2 { font-family: 'Playfair Display', serif; color: #FFC107; font-size: 1.6rem; }
+        .nav-tabs { display: flex; background: #1a1a1a; border-bottom: 1px solid #2a2a2a; padding: 0 2rem; gap: 5px; }
+        .nav-tab { padding: 12px 24px; cursor: pointer; font-size: 0.9rem; color: #888; border-bottom: 2px solid transparent; transition: all 0.2s; font-weight: 500; }
+        .nav-tab:hover { color: #FFC107; }
+        .nav-tab.active { color: #FFC107; border-bottom: 2px solid #FFC107; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .powerbi-frame { width: 100%; height: calc(100vh - 110px); border: none; display: block; }
+        .form-section { min-height: calc(100vh - 110px); display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; background-image: radial-gradient(ellipse at 20% 50%, rgba(255,193,7,0.05) 0%, transparent 60%); }
+        .form-container { width: 100%; max-width: 680px; }
+        .form-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 20px; padding: 2.5rem; box-shadow: 0 40px 80px rgba(0,0,0,0.5); }
+        .form-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 2rem; color: #fff; display: flex; align-items: center; gap: 10px; }
+        .form-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, #FFC107, transparent); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group.full { grid-column: 1 / -1; }
+        label { font-size: 0.75rem; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        input, select { background: #222; border: 1px solid #333; border-radius: 10px; padding: 12px 16px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; transition: all 0.2s ease; outline: none; width: 100%; }
+        input:focus, select:focus { border-color: #FFC107; background: #1e1e1e; box-shadow: 0 0 0 3px rgba(255,193,7,0.1); }
+        select option { background: #1a1a1a; }
+        .submit-btn { width: 100%; padding: 16px; background: #FFC107; color: #0a0a0a; border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 1.5rem; transition: all 0.2s ease; }
+        .submit-btn:hover { background: #ffca28; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,193,7,0.3); }
+        .submit-btn:disabled { background: #444; color: #888; cursor: not-allowed; transform: none; }
+        .success-msg { display: none; background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.3); border-radius: 12px; padding: 16px; text-align: center; color: #4CAF50; margin-top: 1rem; }
+        .error-msg { display: none; background: rgba(244,67,54,0.1); border: 1px solid rgba(244,67,54,0.3); border-radius: 12px; padding: 16px; text-align: center; color: #f44336; margin-top: 1rem; }
+        .form-note { text-align: center; color: #444; font-size: 0.8rem; margin-top: 1.5rem; }
+        .form-note span { color: #FFC107; }
+        .chat-button { position: fixed; bottom: 30px; right: 30px; background-color: #FFC107; color: #121212; border: none; border-radius: 50px; padding: 15px 25px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255,193,7,0.4); z-index: 1000; font-family: 'DM Sans', sans-serif; }
+        .chat-button:hover { background-color: #ffca28; transform: scale(1.05); transition: 0.2s; }
+        .chat-popup { position: fixed; bottom: 90px; right: 30px; width: 400px; height: 600px; background: #1a1a1a; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 999; display: none; flex-direction: column; overflow: hidden; border: 1px solid #FFC107; }
+        .chat-popup.active { display: flex; }
+        .chat-header { background: #FFC107; color: #121212; padding: 15px 20px; font-weight: bold; font-size: 16px; display: flex; justify-content: space-between; align-items: center; font-family: 'DM Sans', sans-serif; }
+        .chat-close { cursor: pointer; font-size: 20px; font-weight: bold; background: none; border: none; color: #121212; }
+        .chat-iframe { width: 100%; height: 100%; border: none; flex: 1; }
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .form-card { padding: 1.5rem; } .chat-popup { width: 95vw; right: 2.5vw; } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>🌍 Tripzy Travel Analytics</h2>
+    </div>
+
+    <div class="nav-tabs">
+        <div class="nav-tab active" onclick="showTab('dashboard', this)">📊 Dashboard</div>
+        <div class="nav-tab" onclick="showTab('booking', this)">➕ Add Booking</div>
+    </div>
+
+    <div class="section active" id="tab-dashboard">
+        <iframe class="powerbi-frame" title="Power BI Report"
+            src="https://app.powerbi.com/reportEmbed?reportId=325b5054-1380-4d8c-9c03-07d9cd84ea4b&autoAuth=true&ctid=aed43286-0f66-47d6-942b-d31a4b8addca"
+            allowFullScreen="true">
+        </iframe>
+    </div>
+
+    <div class="section" id="tab-booking">
+        <div class="form-section">
+            <div class="form-container">
+                <div class="form-card">
+                    <div class="form-title">➕ Add New Booking</div>
+                    <form id="bookingForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Booking ID</label>
+                                <input type="text" id="bookingId" placeholder="e.g. CA-2026-001" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Customer Name</label>
+                                <input type="text" id="customerName" placeholder="Full name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Booking Date</label>
+                                <input type="date" id="bookingDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Travel End Date</label>
+                                <input type="date" id="travelEndDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Destination</label>
+                                <select id="destination" required>
+                                    <option value="">Select destination</option>
+                                    <option value="Goa">Goa</option>
+                                    <option value="Manali">Manali</option>
+                                    <option value="Jaipur">Jaipur</option>
+                                    <option value="Kerela">Kerala</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Package Type</label>
+                                <select id="packageType" required>
+                                    <option value="">Select package</option>
+                                    <option value="Budget">Budget</option>
+                                    <option value="Luxury">Luxury</option>
+                                    <option value="Honeymoon">Honeymoon</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Travel Mode</label>
+                                <select id="travelMode" required>
+                                    <option value="">Select mode</option>
+                                    <option value="Bus">Bus</option>
+                                    <option value="Flight">Flight</option>
+                                    <option value="Train">Train</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Customer Type</label>
+                                <select id="customerType" required>
+                                    <option value="">Select type</option>
+                                    <option value="Consumer">Consumer</option>
+                                    <option value="Corporate">Corporate</option>
+                                    <option value="Home Office">Home Office</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Revenue (₹)</label>
+                                <input type="number" id="revenue" placeholder="e.g. 50000" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Final Revenue (₹)</label>
+                                <input type="number" id="finalRevenue" placeholder="e.g. 48000" required>
+                            </div>
+                            <div class="form-group full">
+                                <label>Profit (₹)</label>
+                                <input type="number" id="profit" placeholder="e.g. 9600" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            ➕ Add Booking to Database
+                        </button>
+                        <div class="success-msg" id="successMsg">
+                            ✅ Booking added successfully! Power BI dashboard will update automatically.
+                        </div>
+                        <div class="error-msg" id="errorMsg" id="errorText">
+                            ❌ Error adding booking. Please try again.
+                        </div>
+                    </form>
+                    <div class="form-note">
+                        Data stored in <span>Azure SQL Database</span> → syncs with Power BI automatically
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-popup" id="chatPopup">
+        <div class="chat-header">
+            🤖 Tripzy Analytics Assistant
+            <button class="chat-close" onclick="toggleChat()">✕</button>
+        </div>
+        <iframe class="chat-iframe" src="https://tripzybyurvashi.azurewebsites.net/" allow="microphone"></iframe>
+    </div>
+
+    <button class="chat-button" onclick="toggleChat()">💬 Ask Tripzy AI</button>
+
+    <script>
+        // Azure Function URL
+        const AZURE_FUNCTION_URL = "https://tripzy-api-g4b4fmbsfjh7hsbr.centralindia-01.azurewebsites.net/api/AddBooking";
+
+        // Set today's date
+        document.getElementById('bookingDate').valueAsDate = new Date();
+
+        // Tab switching
+        function showTab(tab, el) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            el.classList.add('active');
+        }
+
+        // Chatbot toggle
+        function toggleChat() {
+            document.getElementById('chatPopup').classList.toggle('active');
+        }
+
+        // Form submission - connected to Azure Function
+        document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('submitBtn');
+            const successMsg = document.getElementById('successMsg');
+            const errorMsg = document.getElementById('errorMsg');
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Adding booking...';
+            successMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+
+            const booking = {
+                BookingID: document.getElementById('bookingId').value,
+                BookingDate: document.getElementById('bookingDate').value,
+                TravelEndDate: document.getElementById('travelEndDate').value,
+                TravelMode: document.getElementById('travelMode').value,
+                CustomerName: document.getElementById('customerName').value,
+                CustomerType: document.getElementById('customerType').value,
+                Destination: document.getElementById('destination').value,
+                PackageType: document.getElementById('packageType').value,
+                Revenue: parseFloat(document.getElementById('revenue').value),
+                FinalRevenue: parseFloat(document.getElementById('finalRevenue').value),
+                Profit: parseFloat(document.getElementById('profit').value)
+            };
+
+            try {
+                const response = await fetch(AZURE_FUNCTION_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(booking)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    successMsg.style.display = 'block';
+                    document.getElementById('bookingForm').reset();
+                    document.getElementById('bookingDate').valueAsDate = new Date();
+                } else {
+                    errorMsg.style.display = 'block';
+                    errorMsg.textContent = '❌ Error: ' + (result.error || 'Please try again');
+                }
+            } catch (err) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = '❌ Connection error. Please try again.';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '➕ Add Booking to Database';
+            }
+        });
+    </script>
+
+</body>
+</html>
