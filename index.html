@@ -58,7 +58,7 @@
     </div>
 
     <div class="section active" id="tab-dashboard">
-        <iframe class="powerbi-frame" title="Power BI Report"
+        <iframe class="powerbi-frame" id="powerbiFrame" title="Power BI Report"
             src="https://app.powerbi.com/reportEmbed?reportId=325b5054-1380-4d8c-9c03-07d9cd84ea4b&autoAuth=true&ctid=aed43286-0f66-47d6-942b-d31a4b8addca"
             allowFullScreen="true">
         </iframe>
@@ -143,7 +143,7 @@
                         <div class="success-msg" id="successMsg">
                             ✅ Booking added successfully! Power BI dashboard will update automatically.
                         </div>
-                        <div class="error-msg" id="errorMsg" id="errorText">
+                        <div class="error-msg" id="errorMsg">
                             ❌ Error adding booking. Please try again.
                         </div>
                     </form>
@@ -166,13 +166,10 @@
     <button class="chat-button" onclick="toggleChat()">💬 Ask Tripzy AI</button>
 
     <script>
-        // Azure Function URL
         const AZURE_FUNCTION_URL = "https://tripzy-api-g4b4fmbsfjh7hsbr.centralindia-01.azurewebsites.net/api/AddBooking";
 
-        // Set today's date
         document.getElementById('bookingDate').valueAsDate = new Date();
 
-        // Tab switching
         function showTab(tab, el) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -180,12 +177,18 @@
             el.classList.add('active');
         }
 
-        // Chatbot toggle
         function toggleChat() {
             document.getElementById('chatPopup').classList.toggle('active');
         }
 
-        // Form submission - connected to Azure Function
+        // ✅ AUTO REFRESH POWER BI IFRAME EVERY 30 SECONDS
+        setInterval(() => {
+            const iframe = document.getElementById('powerbiFrame');
+            if (iframe) {
+                iframe.src = iframe.src;
+            }
+        }, 30000);
+
         document.getElementById('bookingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -240,4 +243,4 @@
     </script>
 
 </body>
-</html>
+</html> 
